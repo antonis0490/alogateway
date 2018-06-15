@@ -1,0 +1,35 @@
+{
+    "name": "antonis0490/omnipay-alogateway",
+    "type": "library",
+    "description": "alogateway driver for the Omnipay payment processing library",
+    "keywords": [
+        "alogateway",
+        "wallet",
+        "gateway",
+        "merchant",
+        "omnipay",
+        "pay",
+        "payment",
+        "cakePHP",
+        "symfony"
+    ],
+    "homepage": "https://github.com/antonis0490/omnipay-alogateway",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "antonis0490",
+            "homepage": "https://github.com/antonis0490/omnipay-alogateway/graphs/contributors"
+        }
+    ],
+    "autoload": {
+        "psr-4": { "Omnipay\\alogateway\\" : "src/" }
+    },
+    "require": {
+        "omnipay/common": "~2.0"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.3.x-dev"
+        }
+    }
+}
