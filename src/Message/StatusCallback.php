@@ -6,10 +6,10 @@ use Omnipay\Common\Message\AbstractResponse;
 
 class StatusCallback extends AbstractResponse
 {
-    const STATUS_SUCCESSFUL = 'approved';
+    const STATUS_SUCCESSFUL = 'a0';
     const STATUS_DECLINED = 'declined';
     const STATUS_ERROR = 'error';
-    const STATUS_PENDING = 'pending';
+    const STATUS_PENDING = 'tr12';
     const STATUS_FILTERED = 'filtered';
 
     public function __construct(array $post)
@@ -67,7 +67,7 @@ class StatusCallback extends AbstractResponse
 
     public function getComment()
     {
-        return $this->data['error_message'];
+        return $this->data['message'];
     }
 
     /**
@@ -147,7 +147,7 @@ class StatusCallback extends AbstractResponse
      */
     public function orderidFilled()
     {
-        return ($this->data['orderid'] != '' ? true : false);
+        return ($this->data['transactionid'] != '' ? true : false);
     }
 
 
@@ -156,7 +156,8 @@ class StatusCallback extends AbstractResponse
      */
     public function getResponseChecksum($secret_word)
     {
-        $concat = $this->data["status"].$this->data["orderid"].$this->data["merchant_order"].$secret_word;
+        $concat = $this->data["transactionid"].$this->data["merchant_order"].$this->data["amount"];
+        $concat .= $this->data["currency"].$secret_word.$this->data["bank_transactionid"].$secret_word.$this->data["status"];
         return $concat;
     }
 
@@ -179,7 +180,7 @@ class StatusCallback extends AbstractResponse
      */
     public function CalculateChecksum($secret_word, $concat){
 
-        $signature = sha1($concat);
+        $signature = hash_hmac("sha1", $concat, $secret_word);
         return $signature;
     }
 

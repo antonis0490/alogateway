@@ -12,7 +12,7 @@ class PaymentResponse extends AbstractResponse implements RedirectResponseInterf
     protected $endpoint;
 
 
-    public function __construct($purchaseRequest, $data, $endpoint)
+    public function __construct($purchaseRequest, $data, $endpoint=null)
     {
         parent::__construct($purchaseRequest, $data);
         $this->endpoint = $endpoint;
@@ -41,14 +41,8 @@ class PaymentResponse extends AbstractResponse implements RedirectResponseInterf
      */
     public function getRedirectData()
     {
-        $dataNeeded = array("shop","transaction","successUrl","failUrl","target");
-        $data = $this->request->getParameters();
-        foreach ($data as $key => $value) {
-            if (empty($value) || !in_array($key, $dataNeeded) ) {
-                unset($data[$key]);
-            }
-        }
-        return $data;
+
+        return $this->data;
     }
 
     /**

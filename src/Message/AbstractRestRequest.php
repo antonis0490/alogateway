@@ -13,7 +13,7 @@ abstract class AbstractRestRequest extends \Omnipay\Common\Message\AbstractReque
      * Sandbox Endpoint URL
      * @var string URL
      */
-    protected $testEndpoint = '';
+    protected $testEndpoint = 'https://report.cdc.boarding.alogateway.co:44381';
 
     /**
      * Live Endpoint URL

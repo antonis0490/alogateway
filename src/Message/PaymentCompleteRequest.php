@@ -2,8 +2,8 @@
 
 namespace Omnipay\Alogateway\Message;
 
-use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Exception\InvalidResponseException;
+use Omnipay\Common\Message\AbstractRequest;
 
 
 class PaymentCompleteRequest extends AbstractRequest
@@ -40,6 +40,42 @@ class PaymentCompleteRequest extends AbstractRequest
     /**
      * @return mixed
      */
+    public function getAlogatewayMerchant()
+    {
+        return $this->getParameter('alogateway_merchant');
+
+    }
+
+    /**
+     * @param $value
+     * @return mixed
+     */
+    public function setAlogatewayMerchant($value)
+    {
+        return $this->setParameter('alogateway_merchant', $value);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAlogatewaySecret()
+    {
+        return $this->getParameter('alogateway_secret');
+
+    }
+
+    /**
+     * @param $value
+     * @return mixed
+     */
+    public function setAlogatewaySecret($value)
+    {
+        return $this->setParameter('alogateway_secret', $value);
+    }
+
+    /**
+     * @return mixed
+     */
     public function getFirstName()
     {
         return $this->getParameter('first_name');
@@ -54,6 +90,7 @@ class PaymentCompleteRequest extends AbstractRequest
     {
         return $this->setParameter('first_name', $value);
     }
+
     /**
      *
      * @return mixed
@@ -190,7 +227,7 @@ class PaymentCompleteRequest extends AbstractRequest
      */
     public function getIpaddress()
     {
-        return $this->getParameter('ipaddress');
+        return $_SERVER['REMOTE_ADDR'];
     }
 
     /**
@@ -551,20 +588,22 @@ class PaymentCompleteRequest extends AbstractRequest
     public function getData()
     {
 
-        $concat = $this->getClientOrderid().($this->getAmount() * 100).$this->getEmail().$this->getToken();
-        $concat = sha1($concat);
+        $concat = $this->getAlogatewayMerchant() . ($this->getAmount() * 100) . $this->getCurrency() . $this->getFirstName() . $this->getLastName() . $this->getAddress1() . $this->getCity();
+        $concat .= $this->getZipCode() . $this->getCountry() . $this->getPhone() . $this->getEmail() . $this->getClientOrderid() . $this->getDescription() . $this->getSuccessUrl();
 
-        $sign = crypt($concat, $this->getSecret());
-        $pos = mb_strpos($sign, $this->getSecret()) + mb_strlen($this->getSecret());
-        $signature = mb_substr($sign, $pos);
+        $control = hash_hmac("sha1", $concat, $this->getAlogatewaySecret());
+
 
         $input = array
         (
 
             "body" => array
             (
-                "client_orderid" => $this->getClientOrderid(),
-                "order_desc" => $this->getOrderDesc(),
+                "apiversion" => 3,
+                "version" => 11,
+                "merchant_account" => $this->getAlogatewayMerchant(),
+                "merchant_order" => $this->getClientOrderid(),
+                "merchant_product_desc" => $this->getDescription(),
                 "first_name" => $this->getFirstName(),
                 "last_name" => $this->getLastName(),
                 "address1" => $this->getAddress1(),
@@ -573,18 +612,45 @@ class PaymentCompleteRequest extends AbstractRequest
                 "country" => $this->getCountry(),
                 "phone" => $this->getPhone(),
                 "email" => $this->getEmail(),
-                "amount" => $this->getAmount(),
+                "amount" => $this->getAmount() * 100,
                 "currency" => $this->getCurrency(),
+                "bankcode" => "LBT",
                 "ipaddress" => $this->getIpaddress(),
-                "redirect_url" => $this->getReturnUrl(),
-                "server_callback_url" => $this->getServerReturnUrl(),
-                "control" => $concat
+                "return_url" => $this->getSuccessUrl(),
+                "server_return_url" => $this->getServerReturnUrl(),
+                "control" => $control
             )
         );
 
         $encoded = json_encode($input);
 
-        return $input;
+        $form = '<form name="cupForm" id="cupForm" action="https://payment.cdc.alogateway.co/ChinaDebitCard" method="POST">
+        <input type="hidden" name="apiversion" value="'.$input["body"]["apiversion"].'" />
+        <input type="hidden" name="version" value="'.$input["body"]["version"].'" />
+        <input type="hidden" name="merchant_account" value="'.$input["body"]["merchant_account"].'" />
+        <input type="hidden" name="merchant_order" value="'.$input["body"]["merchant_order"].'" />
+        <input type="hidden" name="merchant_product_desc" value="'.$input["body"]["merchant_product_desc"].'" />
+        <input type="hidden" name="first_name" value="'.$input["body"]["first_name"].'" />
+        <input type="hidden" name="last_name" value="'.$input["body"]["last_name"].'" />
+        <input type="hidden" name="address1" value="'.$input["body"]["address1"].'" />
+        <input type="hidden" name="city" value="'.$input["body"]["city"].'" />
+        <input type="hidden" name="zip_code" value="'.$input["body"]["zip_code"].'" />
+        <input type="hidden" name="country"  value="'.$input["body"]["country"].'" />
+        <input type="hidden" name="phone"  value="'.$input["body"]["phone"].'" />
+        <input type="hidden" name="email"  value="'.$input["body"]["email"].'" />
+        <input type="hidden" name="amount"  value="'.$input["body"]["amount"].'" />
+        <input type="hidden" name="currency"  value="'.$input["body"]["currency"].'" />
+        <input type="hidden" name="bankcode"  value="'.$input["body"]["bankcode"].'" />
+        <input type="hidden" name="ipaddress"  value="'.$input["body"]["ipaddress"].'" />
+        <input type="hidden" name="return_url"  value="'.$input["body"]["return_url"].'" />
+        <input type="hidden" name="server_return_url"  value="'.$input["body"]["server_return_url"].'" />
+        <input type="hidden" name="control"  value="'.$input["body"]["control"].'" />
+        </form>
+        <script language="JavaScript">
+                document.getElementById("cupForm").submit();
+        </script>';
+
+        return $form;
     }
 
 
@@ -602,7 +668,7 @@ class PaymentCompleteRequest extends AbstractRequest
 
     protected function createResponse($data)
     {
-        return $this->response = new PaymentResponse($this, $data, $data["redirect-url"]);
+        return $this->response = new \Omnipay\alogateway\Message\PaymentResponse($this, $data);
     }
 
     /**
@@ -623,6 +689,7 @@ class PaymentCompleteRequest extends AbstractRequest
      */
     public function sendData($data)
     {
+
         // don't throw exceptions for 4xx errors
         $this->httpClient->getEventDispatcher()->addListener(
             'request.error',
@@ -649,16 +716,16 @@ class PaymentCompleteRequest extends AbstractRequest
             $curl = curl_init($this->getEndpoint());
             curl_setopt($curl, CURLOPT_POST, true);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data['body']));
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $data['body']);
         }
 
         try {
 
-            $output = curl_exec($curl);
+//            $output = curl_exec($curl);
             curl_close($curl);
 
-            $answer = array();
-            parse_str($output, $answer);
+//            $answer = array();
+//            parse_str($output, $answer);
 
 //            $httpRequest->getCurlOptions()->set(CURLOPT_POSTFIELDS, http_build_query($data['body']) );
 //            $httpRequest->getCurlOptions()->set(CURLOPT_POST, true);
@@ -667,7 +734,7 @@ class PaymentCompleteRequest extends AbstractRequest
 //            $httpResponse = $httpRequest->send();
 //            // Empty response body should be parsed also as and empty array
 //            $body = $httpResponse->getBody(true);
-            return $this->response = $this->createResponse($answer);
+            return $this->response = $this->createResponse($data);
 
 
         } catch (\Exception $e) {

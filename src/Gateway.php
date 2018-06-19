@@ -35,6 +35,29 @@ class Gateway extends AbstractGateway
         return $this->setParameter('AlogatewayApiId', $value);
     }
 
+    public function getAlogatewayMerchant()
+    {
+        return $this->getParameter('AlogatewayMerchant');
+    }
+
+
+    public function setAlogatewayMerchant($value)
+    {
+        return $this->setParameter('AlogatewayMerchant', $value);
+    }
+
+
+    public function getAlogatewaySecret()
+    {
+        return $this->getParameter('AlogatewaySecret');
+    }
+
+
+    public function setAlogatewaySecret($value)
+    {
+        return $this->setParameter('AlogatewaySecret', $value);
+    }
+
 
     public function getAlogatewayApiPass()
     {
@@ -166,6 +189,6 @@ class Gateway extends AbstractGateway
      */
     public function completePurchase(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\Alogateway\Message\PaymentCompleteRequest', $parameters);
+        return $this->createRequest('\Omnipay\alogateway\Message\PaymentCompleteRequest', $parameters);
     }
 }
