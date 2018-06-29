@@ -157,7 +157,7 @@ class StatusCallback extends AbstractResponse
     public function getResponseChecksum($secret_word)
     {
         $concat = $this->data["transactionid"].$this->data["merchant_order"].$this->data["amount"];
-        $concat .= $this->data["currency"].$secret_word.$this->data["bank_transactionid"].$secret_word.$this->data["status"];
+        $concat .= $this->data["currency"].$this->data["bank_transactionid"].$this->data["status"];
         return $concat;
     }
 
